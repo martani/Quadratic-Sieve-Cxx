@@ -9,13 +9,19 @@ AC_CHECK_LIB(stdc++, main)
 AC_CHECK_LIB(gmp, __gmpz_legendre, ,
        [AC_MSG_ERROR(
        [GNU MP not found, or not 4.1 or up, see http://gmplib.org/])])
-AC_CHECK_LIB(gmpxx, __gmpz_init)
+AC_CHECK_LIB(gmpxx, __gmpz_init, ,
+       [AC_MSG_ERROR(
+       [GNU MP not found, or not 4.1 or up, see http://gmplib.org/])])
 
 AC_CHECK_HEADER([gmp.h], , [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/])])
 
 AC_LANG_PUSH(C++)
 AC_CHECK_HEADER([gmpxx.h], , [AC_MSG_ERROR([GMP with --enable-cxx is required])])
 AC_LANG_POP
+
+AC_CHECK_LIB(mpfr, mpfr_add, ,
+       [AC_MSG_ERROR(
+       [MPFR required, see http://www.mpfr.org/])])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile tests/Makefile])

@@ -1,3 +1,11 @@
+/*
+ * eratosthenes.C
+ *
+ *  Created on: Jan 5, 2013
+ *      Author: martani
+ *      Copyright martani 2013
+ */
+
 
 #ifndef ERATOSTHENES_C_
 #define ERATOSTHENES_C_
@@ -7,9 +15,7 @@
 
 void Erastosthenes::SievePrimesUpTo(uint64_t upperBase)
 {
-	std::cout << "SievePrimesUpTo" << std::endl;
-
-	int64_t num_discovered_primes = 0;
+	//int64_t num_discovered_primes = 0;
 
 	//set all integers from [0..upperBase] as primes in the beginning
 	this->_primes_bitset.clear();
@@ -22,7 +28,7 @@ void Erastosthenes::SievePrimesUpTo(uint64_t upperBase)
 	int64_t p = 2, offset;
 
 	//2 is a prime
-	num_discovered_primes = 1;
+	//num_discovered_primes = 1;
 
 	while (1) {
 			offset = 2 * p;
@@ -46,7 +52,7 @@ void Erastosthenes::SievePrimesUpTo(uint64_t upperBase)
 
 			//next prime is in offset now
 			p = offset;
-			num_discovered_primes++;
+			//num_discovered_primes++;
 	}
 
 	this->_sieving_performed = true;
@@ -54,8 +60,6 @@ void Erastosthenes::SievePrimesUpTo(uint64_t upperBase)
 
 void Erastosthenes::GetPrimes(vector<uint64_t>& primesArray, uint64_t upperBase)
 {
-	std::cout << "GetPrimes" << std::endl;
-
 	vector<uint64_t> primes;
 
 	//Sieving
@@ -84,8 +88,6 @@ void Erastosthenes::GetPrimes(vector<uint64_t>& primesArray, uint64_t upperBase)
 void Erastosthenes::GetPrimes_QuadraticResidue(vector<uint64_t>& primesArray,
 		uint64_t upperBase, mpz_class N)
 {
-	std::cout << "GetPrimes_QuadraticResidue" << std::endl;
-
 	vector<uint64_t> primes;
 
 	//Get an mpz_t out of C++ mpz_class
@@ -100,10 +102,10 @@ void Erastosthenes::GetPrimes_QuadraticResidue(vector<uint64_t>& primesArray,
 		Erastosthenes::SievePrimesUpTo(upperBase);
 
 	//Push the prime 2, mpz_legendre() required an odd positive prime
-	primes.push_back(2);
+	//primes.push_back(2);
 
 	//For bit at a position x in _primes_bitset: true => x is prime, false => x is not prime
-	for(uint64_t i=1; i<this->_primes_bitset.size(); ++i)
+	for(uint64_t i=0; i<this->_primes_bitset.size(); ++i)
 	{
 		mpz_set_ui(p, i);
 		if(this->_primes_bitset[i] && mpz_legendre(Nmpz, p) == 1)

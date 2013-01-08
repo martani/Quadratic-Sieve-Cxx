@@ -1,3 +1,10 @@
+/*
+ * eratosthenes.h
+ *
+ *  Created on: Jan 5, 2013
+ *      Author: martani
+ *      Copyright martani 2013
+ */
 
 
 #ifndef ERATOSTHENES_H_
@@ -40,7 +47,6 @@ public:
 
 	~Erastosthenes()
 	{
-		std::cout << "Destructor" << std::endl;
 		vector<bool> tmp;
 		this->_primes_bitset.clear();
 		this->_primes_bitset.swap(tmp);
