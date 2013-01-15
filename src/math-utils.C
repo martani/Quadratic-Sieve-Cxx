@@ -39,10 +39,10 @@ void MathUtils::GetSmoothnessBase(mpz_class& ret_base, mpz_class& N)
 	mpfr_clears(f_N, log_N, log_log_N, NULL);
 }
 
-unsigned long int MathUtils::GetTimeStamp() {
+unsigned long long int MathUtils::GetTimeStamp() {
     struct timeval tv;
     gettimeofday(&tv,NULL);
-    return tv.tv_sec*(uint64_t)1000000+tv.tv_usec;
+    return tv.tv_sec*(unsigned long long int)1000000+tv.tv_usec;
 }
 
 

@@ -23,7 +23,12 @@ public:
 
 	static void GetRandomPrime(mpz_class& rand_prime, unsigned int num_bits);
 
-	static unsigned long int GetTimeStamp();
+	static unsigned long long int GetTimeStamp();
+
+	//returns the next integer r such that:
+	//								r >= x &&
+	//								r = root mod prime
+	static mpz_class GetNextMultipleGreaterThanX(mpz_class x, mpz_class prime, mpz_class root);
 };
 
 

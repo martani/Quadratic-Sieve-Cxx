@@ -9,6 +9,9 @@
 /* Define to 1 if you have the `gmpxx' library (-lgmpxx). */
 #undef HAVE_LIBGMPXX
 
+/* Define to 1 if you have the `mpfr' library (-lmpfr). */
+#undef HAVE_LIBMPFR
+
 /* Define to 1 if you have the `stdc++' library (-lstdc++). */
 #undef HAVE_LIBSTDC__
 

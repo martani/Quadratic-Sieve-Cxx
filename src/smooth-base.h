@@ -10,6 +10,8 @@
 #define SMOOTH_BASE_H_
 
 #include <vector>
+#include <climits>
+#include <sstream>
 #include "gmp.h"
 #include "gmpxx.h"
 #include "mpfr.h"
@@ -41,14 +43,26 @@ private:
 
 public:
 
-	std::vector<uint64_t> primes;
-	std::vector<uint64_t> roots_1;
-	std::vector<uint64_t> roots_2;
+	std::vector<unsigned long int> primes;
+	std::vector<unsigned long int> roots_1;
+	std::vector<unsigned long int> roots_2;
 
 	SmoothBase(mpz_class modulus)
 	{
 		N = modulus;
 		GetSmoothnessBase(B, modulus);
+
+		//check if the base is less than ULONG_MAX, since all the primes in the
+		//smooth base are of type ulong int.
+		B.get_str(10);
+		if(B >= ULONG_MAX)
+		{
+			std::ostringstream msg;
+			msg << "Smooth base too large (=" << B.get_str(10)
+				<< ")! Only \"unsigned long\" primes are supported for now. (ULONG_MAX="
+				<< ULONG_MAX << ")";
+			throw std::length_error(msg.str());
+		}
 	}
 
 	//Sieves for the primes in the base and computes the roots of N mod these primes
@@ -92,6 +106,7 @@ void SmoothBase::GetSmoothnessBase(mpz_class& ret_base, mpz_class& N)
 	ret_base = mpz_class(base_mpz);
 
 	mpfr_clears(f_N, log_N, log_log_N, NULL);
+	mpz_clear(base_mpz);
 }
 
 
@@ -112,17 +127,18 @@ void SmoothBase::ComputeRoots()
 
 	for(int i=0; i<this->primes.size(); ++i)
 	{
-		mpz_set_ui(tmp_p, (uint64_t) this->primes[i]);
+		mpz_set_ui(tmp_p, (unsigned long int) this->primes[i]);
 		mpz_sqrtm(tmp_root, this->N.get_mpz_t(), tmp_N);	/* calculate the modular root */
 
 		root = mpz_class(tmp_root);
 		this->roots_1.push_back(root.get_ui());		//root 1
 
 		root = -1 * root;
-		unsigned long int t =(unsigned long int)this->primes[i];
-		root = root % t;
+		root %= this->primes[i];
 		this->roots_2.push_back(root.get_ui());
 	}
+
+	mpz_clears(tmp_p, tmp_root, tmp_N, NULL);
 }
 
 

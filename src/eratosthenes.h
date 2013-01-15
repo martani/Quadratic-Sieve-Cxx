@@ -12,7 +12,6 @@
 
 
 #include <vector>
-#include <inttypes.h>
 #include <gmpxx.h>
 
 
@@ -26,7 +25,7 @@ private:
 
 	//Performs the Eratosthenes sieving for numbers in [0..upperBase]
 	//The sieve is saved in the vector _primes_bitset
-	void SievePrimesUpTo(uint64_t upperBase);
+	void SievePrimesUpTo(unsigned long int upperBase);
 
 	bool _sieving_performed;
 
@@ -53,11 +52,12 @@ public:
 	}
 
 	//Fills the vector primesArray with the primes in the interval [0..upperBase]
-	void GetPrimes(vector<uint64_t>& primesArray, uint64_t upperBase);
+	void GetPrimes(vector<unsigned long int>& primesArray, unsigned long int upperBase);
 
 	//Fills the vector primesArray with the primes in the interval [0..upperBase]
 	//and to which N is a quadratic residue
-	void GetPrimes_QuadraticResidue(vector<uint64_t>& primesArray, uint64_t upperBase,
+	void GetPrimes_QuadraticResidue(vector<unsigned long int>& primesArray,
+			unsigned long int upperBase,
 			mpz_class N);
 };
 

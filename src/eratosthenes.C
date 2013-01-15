@@ -13,7 +13,7 @@
 #include "utils.h"
 
 
-void Erastosthenes::SievePrimesUpTo(uint64_t upperBase)
+void Erastosthenes::SievePrimesUpTo(unsigned long int upperBase)
 {
 	//int64_t num_discovered_primes = 0;
 
@@ -58,16 +58,17 @@ void Erastosthenes::SievePrimesUpTo(uint64_t upperBase)
 	this->_sieving_performed = true;
 }
 
-void Erastosthenes::GetPrimes(vector<uint64_t>& primesArray, uint64_t upperBase)
+void Erastosthenes::GetPrimes(vector<unsigned long int>& primesArray,
+		unsigned long int upperBase)
 {
-	vector<uint64_t> primes;
+	vector<unsigned long int> primes;
 
 	//Sieving
 	if(!this->_sieving_performed)
 		Erastosthenes::SievePrimesUpTo(upperBase);
 
 	//For bit at a position x in _primes_bitset: true => x is prime, false => x is not prime
-	for(uint64_t i=0; i<this->_primes_bitset.size(); ++i)
+	for(int i=0; i<this->_primes_bitset.size(); ++i)
 	{
 		if(this->_primes_bitset[i])
 			primes.push_back(i);
@@ -85,10 +86,10 @@ void Erastosthenes::GetPrimes(vector<uint64_t>& primesArray, uint64_t upperBase)
 	}
 }
 
-void Erastosthenes::GetPrimes_QuadraticResidue(vector<uint64_t>& primesArray,
-		uint64_t upperBase, mpz_class N)
+void Erastosthenes::GetPrimes_QuadraticResidue(vector<unsigned long int>& primesArray,
+		unsigned long int upperBase, mpz_class N)
 {
-	vector<uint64_t> primes;
+	vector<unsigned long int> primes;
 
 	//Get an mpz_t out of C++ mpz_class
 	mpz_t Nmpz;
@@ -105,13 +106,14 @@ void Erastosthenes::GetPrimes_QuadraticResidue(vector<uint64_t>& primesArray,
 	//primes.push_back(2);
 
 	//For bit at a position x in _primes_bitset: true => x is prime, false => x is not prime
-	for(uint64_t i=0; i<this->_primes_bitset.size(); ++i)
+	for(int i=0; i<this->_primes_bitset.size(); ++i)
 	{
 		mpz_set_ui(p, i);
 		if(this->_primes_bitset[i] && mpz_legendre(Nmpz, p) == 1)
 			primes.push_back(i);
 	}
 
+	mpz_clears(Nmpz, p, NULL);
 	primesArray.swap(primes);
 
 	if(!this->_keep_primes_bitset)
