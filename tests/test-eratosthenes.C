@@ -73,7 +73,8 @@ int main(int argc, char **argv)
 	unsigned long int nb_required_smooth_numbers = smooth_base.primes.size() + NB_LINEAR_RELATIONS;
 	unsigned long int nb_discovered_smooth_numbers = 0;
 
-	mpz_class tmp_prime, starting_x_current_round;
+	mpz_class tmp_prime;
+	mpz_class starting_x_current_round;		//goes throught sqrt(N), sqrt(N)+SIEVING_STEP ...
 
 	//x goes though sqrt(N), sqrt(N)+1, sqrt(N)+2..
 	while(nb_discovered_smooth_numbers < nb_required_smooth_numbers)
@@ -94,7 +95,14 @@ int main(int argc, char **argv)
 		for(unsigned long int i=0; i<smooth_base_size; ++i)
 		{
 			tmp_prime = smooth_base.primes[i];
-			x = starting_x_current_round;
+
+			//First root of (N mod (smooth_base.primes[i]))
+			x = MathUtils::GetNextMultipleGreaterThanX(starting_x_current_round,
+					tmp_prime, smooth_base.roots_1[i]);
+
+			mpz_class x_idx = x-starting_x_current_round;
+			for(unsigned long int j= x_idx.get_ui(); j<SIEVING_STEP; ++j)
+				;
 		}
 	}
 

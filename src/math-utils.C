@@ -60,4 +60,28 @@ void MathUtils::GetRandomPrime(mpz_class& rand_prime, unsigned int num_bits)
 	mpz_clear(p);
 }
 
+//returns the next integer r such that:
+//								r >= x &&
+//								r = root mod prime
+mpz_class MathUtils::GetNextMultipleGreaterThanX(mpz_class x, mpz_class prime,
+		mpz_class root)
+{
+	//Starting with this config: x != root mod prime
+	//We need to find an integer r >= x such that r = root mod prime
+	mpz_class tmp = x;
+	tmp -= root;		//=>	tmp = 0 mod prime
+
+	mpz_class q, r;		//q = tmp/prime, r = tmp mod prime
+	q = tmp / prime;
+	r = tmp % prime;
+
+	if(r != 0)
+		++q;			//Get the *next* multiple of prime
+
+	tmp = q * prime;	//tmp = 0 mod prime && tmp >= (x0 - root)
+	tmp += root;		//tmp = root mod prime => the solution!!
+
+	return tmp;
+}
+
 #endif //MATH_UTILS_C_
