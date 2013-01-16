@@ -18,7 +18,7 @@
 using namespace std;
 
 #define NB_LINEAR_RELATIONS	3
-#define SIEVING_STEP		10000	//Sieve for SIEVING_STEP numbers at a time
+#define SIEVING_STEP		50000	//Sieve for SIEVING_STEP numbers at a time
 
 int main(int argc, char **argv)
 {
@@ -28,12 +28,14 @@ int main(int argc, char **argv)
 		modulus_size_bits = atoi((const char *)argv[1]);
 	}
 
+	cout << "[[GMP " << gmp_version << "]"
+		 << " [MPFR " << mpfr_get_version() << "]]" << endl;
 	cout << "[[ Using RSA modulus size " << modulus_size_bits * 2 << "]]" << endl << endl;
 
 	cout << "[Size of int " << sizeof(int) << "]" << endl;
 	cout << "[Size of unsgined int " << sizeof(unsigned int) << "]" << endl;
 	cout << "[Size of unsgined long int " << sizeof(unsigned long int) << "]" << endl;
-	cout << "[Size of unsgined long long int " << sizeof(unsigned long long int) << "]" << endl;
+	cout << "[Size of unsgined long long int " << sizeof(unsigned long long int) << "]" << endl << endl;
 	mpz_class p, q;
 	MathUtils::GetRandomPrime(p, modulus_size_bits);
 	MathUtils::GetRandomPrime(q, modulus_size_bits);
@@ -42,7 +44,7 @@ int main(int argc, char **argv)
 	cout << "Q = " << q << endl;
 
 	mpz_class N = p * q;
-	cout << "N = p*q = " << N << endl << endl;
+	cout << "N = P*Q = " << N << endl << endl;
 
 	mpz_class x = sqrt(N);	//x goes though sqrt(N), sqrt(N)+1, sqrt(N)+2..
 	if(x * x == N)			//N is a perfect square, factored!
@@ -50,6 +52,7 @@ int main(int argc, char **argv)
 		cout << "Factored! N = " << x << "²" << endl;
 		exit(0);
 	}
+	++x;		//Start from sqrt(N)+1
 
 	SmoothBase smooth_base (N);
 	cout << "Smooth Base = " << smooth_base.GetBase() << "\t" << endl;
@@ -73,38 +76,96 @@ int main(int argc, char **argv)
 	unsigned long int nb_required_smooth_numbers = smooth_base.primes.size() + NB_LINEAR_RELATIONS;
 	unsigned long int nb_discovered_smooth_numbers = 0;
 
-	mpz_class tmp_prime;
+	mpz_class tmp_prime_p;
+	unsigned long int exponent_prime_p;
 	mpz_class starting_x_current_round;		//goes throught sqrt(N), sqrt(N)+SIEVING_STEP ...
+	mpz_class x_idx;
+
+	TIMER_DECLARE(sieving_timer);
+	TIMER_START(sieving_timer);
+	cout << endl << endl;
+	starting_x_current_round = x;
 
 	//x goes though sqrt(N), sqrt(N)+1, sqrt(N)+2..
 	while(nb_discovered_smooth_numbers < nb_required_smooth_numbers)
 	{
-		cout << "round " << nb_discovered_smooth_numbers / 20 << endl;
+		x = starting_x_current_round;
 
-		starting_x_current_round = x;
+		cout << "\r\tSieving at " << starting_x_current_round << "\t";
+		cout << "Smooth numbers found\t " << nb_discovered_smooth_numbers
+			 << "/" << smooth_base_size << "          " << ends;
+		cout.flush();
+
 		//initialize (x, x², exponent vector) for the SIEVING_STEP next x.
 		for(int i=0; i<SIEVING_STEP; ++i)
 		{
-			sieving_temp_smooth_numbers[i].Init(++x, smooth_base_size);
+			sieving_temp_smooth_numbers[i].Init(x++, smooth_base_size);
 		}
-
-		nb_discovered_smooth_numbers += 20;
-
 
 		//Reduce sieving_temp_smooth_numbers[] with the primes in the smooth base
 		for(unsigned long int i=0; i<smooth_base_size; ++i)
 		{
-			tmp_prime = smooth_base.primes[i];
+			tmp_prime_p = smooth_base.primes[i];
 
-			//First root of (N mod (smooth_base.primes[i]))
+/////////// First root of (N mod (smooth_base.primes[i]))
 			x = MathUtils::GetNextMultipleGreaterThanX(starting_x_current_round,
-					tmp_prime, smooth_base.roots_1[i]);
+					tmp_prime_p, smooth_base.roots_1[i]);
 
-			mpz_class x_idx = x-starting_x_current_round;
-			for(unsigned long int j= x_idx.get_ui(); j<SIEVING_STEP; ++j)
-				;
-		}
+			x_idx = x-starting_x_current_round;
+			for(unsigned long int j= x_idx.get_ui(); j<SIEVING_STEP; j+=smooth_base.primes[i])
+			{
+				//Eliminate all powers of tmp_prime in sieving_temp_smooth_numbers[j]
+				exponent_prime_p = sieving_temp_smooth_numbers[j].RemovePowerOfFactor(tmp_prime_p);
+
+				//If the power of tmp_prime_p is odd, we set the corresponding bit in the exponent vector
+				if(exponent_prime_p & 1)
+				{
+					sieving_temp_smooth_numbers[j].SetExponentVectorBit(i);
+				}
+
+				//Check if sieving_temp_smooth_numbers[j] was fully factored
+				if(sieving_temp_smooth_numbers[j].IsFullyFactoredOnSmoothBase())
+				{
+					++nb_discovered_smooth_numbers;
+				}
+			}
+
+
+/////////// Second root of (N mod (smooth_base.primes[i]))
+			if(smooth_base.roots_1[i] == smooth_base.roots_2[i])
+				continue;
+
+			x = MathUtils::GetNextMultipleGreaterThanX(starting_x_current_round,
+					tmp_prime_p, smooth_base.roots_2[i]);
+
+			x_idx = x-starting_x_current_round;
+			for(unsigned long int j= x_idx.get_ui(); j<SIEVING_STEP; j+=smooth_base.primes[i])
+			{
+				//Eliminate all powers of tmp_prime in sieving_temp_smooth_numbers[j]
+				exponent_prime_p = sieving_temp_smooth_numbers[j].RemovePowerOfFactor(tmp_prime_p);
+
+				//If the power of tmp_prime_p is odd, we set the corresponding bit in the exponent vector
+				if(exponent_prime_p & 1)
+				{
+					sieving_temp_smooth_numbers[j].SetExponentVectorBit(i);
+				}
+
+				//Check if sieving_temp_smooth_numbers[j] was fully factored
+				if(sieving_temp_smooth_numbers[j].IsFullyFactoredOnSmoothBase())
+				{
+					++nb_discovered_smooth_numbers;
+				}
+			}
+		}	//handled of all primes
+
+
+		//Move to the next interval
+		starting_x_current_round += SIEVING_STEP;
 	}
+	cout << endl;
+
+	TIMER_STOP(sieving_timer);
+	TIMER_REPORT(sieving_timer);
 
 	delete [] sieving_temp_smooth_numbers;
 
