@@ -54,7 +54,6 @@ public:
 
 		//check if the base is less than ULONG_MAX, since all the primes in the
 		//smooth base are of type ulong int.
-		B.get_str(10);
 		if(B >= ULONG_MAX)
 		{
 			std::ostringstream msg;
@@ -128,13 +127,17 @@ void SmoothBase::ComputeRoots()
 	for(int i=0; i<this->primes.size(); ++i)
 	{
 		mpz_set_ui(tmp_p, (unsigned long int) this->primes[i]);
-		mpz_sqrtm(tmp_root, this->N.get_mpz_t(), tmp_N);	/* calculate the modular root */
+		mpz_sqrtm(tmp_root, tmp_N, tmp_p);	/* calculate the modular root */
 
 		root = mpz_class(tmp_root);
 		this->roots_1.push_back(root.get_ui());		//root 1
 
 		root = -1 * root;
-		root %= this->primes[i];
+		root += this->primes[i];		//Get a positive value, % returns a negative value
+		//root %= this->primes[i];
+
+		assert(root >= 0);
+
 		this->roots_2.push_back(root.get_ui());
 	}
 

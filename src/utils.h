@@ -12,6 +12,7 @@
 #define UTILS_H_
 
 
+#ifdef	ENABLE_TIMERS
 #define TIMER_DECLARE(s)  		\
 	timeval __timer_q_##s; 		\
 	timeval __timer_q_end_##s;	\
@@ -27,6 +28,11 @@
 #define TIMER_REPORT(s)													\
 	std::cout << "Total [" #s "] time: " << __timer_q_diff_##s << " ms."	\
 			  << std::endl;
-
+#else
+#define TIMER_DECLARE(s)
+#define TIMER_START(s)
+#define TIMER_STOP(s)
+#define TIMER_REPORT(s)
+#endif
 
 #endif /* UTILS_H_ */

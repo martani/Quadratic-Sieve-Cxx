@@ -69,7 +69,7 @@ mpz_class MathUtils::GetNextMultipleGreaterThanX(mpz_class x, mpz_class prime,
 	//Starting with this config: x != root mod prime
 	//We need to find an integer r >= x such that r = root mod prime
 	mpz_class tmp = x;
-	tmp -= root;		//=>	tmp = 0 mod prime
+	//tmp -= root;		//=>	tmp = 0 mod prime
 
 	mpz_class q, r;		//q = tmp/prime, r = tmp mod prime
 	q = tmp / prime;
