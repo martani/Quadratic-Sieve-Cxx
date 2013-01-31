@@ -54,6 +54,8 @@ public:
 	//If there are no more available rows, returns false, true otherwise.
 	bool PushExponentVector (SmoothNumber& n);
 
+	bool PushRow(const mpz_t r);
+
 	unsigned long int row_dim () const { return this->n_rows; }
 	unsigned long int col_dim () const { return this->n_cols; }
 
@@ -103,6 +105,17 @@ bool Matrix::PushExponentVector (SmoothNumber& n)
 		return false;
 
 	mpz_init_set(this->_A[this->next_available_row], n.GetExponentVector ());
+	this->next_available_row++;
+
+	return true;
+}
+
+bool Matrix::PushRow(const mpz_t r)
+{
+	if(this->next_available_row >= this->n_rows)
+		return false;
+
+	mpz_init_set(this->_A[this->next_available_row], r);
 	this->next_available_row++;
 
 	return true;

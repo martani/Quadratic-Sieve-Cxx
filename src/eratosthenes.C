@@ -103,12 +103,13 @@ void Erastosthenes::GetPrimes_QuadraticResidue(vector<unsigned long int>& primes
 		Erastosthenes::SievePrimesUpTo(upperBase);
 
 	//Push the prime 2, mpz_legendre() required an odd positive prime
-	//primes.push_back(2);
+	primes.push_back(2);
 
 	//For bit at a position x in _primes_bitset: true => x is prime, false => x is not prime
-	for(int i=0; i<this->_primes_bitset.size(); ++i)
+	for(int i=3; i<this->_primes_bitset.size(); ++i)
 	{
 		mpz_set_ui(p, i);
+
 		if(this->_primes_bitset[i] && mpz_legendre(Nmpz, p) == 1)
 			primes.push_back(i);
 	}

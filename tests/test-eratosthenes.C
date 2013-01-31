@@ -86,9 +86,12 @@ int main(int argc, char **argv)
 		smooth_base.Setup();
 	TIMER_STOP(smooth_base_tm);
 	cout << "[Number of primes in base " << smooth_base.primes.size() << "]\t";
-
 	TIMER_REPORT(smooth_base_tm);
 
+//	Utils::AppendVectorToFile(smooth_base.primes, "primes_roots.txt");
+//	Utils::AppendVectorToFile(smooth_base.roots_1, "primes_roots.txt");
+//	Utils::AppendVectorToFile(smooth_base.roots_2, "primes_roots.txt");
+//	assert (smooth_base.primes.front() == 2);
 
 	unsigned long int smooth_base_size = smooth_base.primes.size();
 	unsigned long int nb_required_smooth_numbers = smooth_base.primes.size() + NB_LINEAR_RELATIONS;
@@ -96,6 +99,7 @@ int main(int argc, char **argv)
 
 
 	Matrix M (nb_required_smooth_numbers, smooth_base_size);
+//	Matrix MATRIX_STATS (nb_required_smooth_numbers, smooth_base_size);
 
 	vector<SmoothNumber> final_smooth_numbers;
 	SmoothNumber *sieving_temp_smooth_numbers;		//We use C arrays here to avoid the copying
@@ -118,6 +122,7 @@ int main(int argc, char **argv)
 	TIMER_DECLARE(get_next_x);
 	TIMER_DECLARE(remove_power);
 
+	unsigned long nb_called_mpz_remove = 0;
 	//x goes though sqrt(N), sqrt(N)+1, sqrt(N)+2..
 	while(nb_discovered_smooth_numbers < nb_required_smooth_numbers)
 	{
@@ -163,6 +168,7 @@ int main(int argc, char **argv)
 #else
 				exponent_prime_p = mpz_remove(sieving_temp_smooth_numbers[j].x_squared,
 						sieving_temp_smooth_numbers[j].x_squared, tmp_prime_p);
+				nb_called_mpz_remove++;
 #endif
 				TIMER_STOP(remove_power);
 
@@ -177,6 +183,11 @@ int main(int argc, char **argv)
 					mpz_setbit(sieving_temp_smooth_numbers[j].exponent_vector, i);
 #endif
 				}
+
+//				if(exponent_prime_p != 0)
+//				{
+//					sieving_temp_smooth_numbers[j].SetNonZeroExponentsVectorBit(i);
+//				}
 
 				//Can never happen
 //				if(exponent_prime_p == 0 && sieving_temp_smooth_numbers[j].IsFullyFactoredOnSmoothBase())
@@ -193,7 +204,7 @@ int main(int argc, char **argv)
 
 					//Add the exponent vector to the matrix
 					M.PushExponentVector(sieving_temp_smooth_numbers[j]);
-
+//					MATRIX_STATS.PushRow(sieving_temp_smooth_numbers[j].GetNonZeroExponentsVector ());
 					//Add the smooth number to the list
 					//final_smooth_numbers.push_back(SmoothNumber ());
 					//final_smooth_numbers.back ().InitWithoutExponentVector(sieving_temp_smooth_numbers[j].X);
@@ -231,6 +242,11 @@ int main(int argc, char **argv)
 #endif
 				}
 
+//				if(exponent_prime_p != 0)
+//				{
+//					sieving_temp_smooth_numbers[j].SetNonZeroExponentsVectorBit(i);
+//				}
+
 //				if(exponent_prime_p == 0 && sieving_temp_smooth_numbers[j].IsFullyFactoredOnSmoothBase())
 //					cout << " REPETITION " << endl;
 
@@ -245,7 +261,7 @@ int main(int argc, char **argv)
 
 					//Add the exponent vector to the matrix
 					M.PushExponentVector(sieving_temp_smooth_numbers[j]);
-
+//					MATRIX_STATS.PushRow(sieving_temp_smooth_numbers[j].GetNonZeroExponentsVector ());
 					//Add the smooth number to the list
 					//final_smooth_numbers.push_back(SmoothNumber ());
 					//final_smooth_numbers.back ().InitWithoutExponentVector(sieving_temp_smooth_numbers[j].X);
@@ -273,6 +289,8 @@ int main(int argc, char **argv)
 	TIMER_STOP(sieving_timer);
 	TIMER_REPORT(sieving_timer);
 
+//	Utils::dumpMatrixAsPbmImage(MATRIX_STATS, "stats.pbm");
+
 	delete [] sieving_temp_smooth_numbers;
 
 	TIMER_DECLARE(gauss);
@@ -285,5 +303,7 @@ int main(int argc, char **argv)
 	TIMER_STOP(gauss);
 	TIMER_REPORT(gauss);
 
+
+	cout << "MPZ REMOVE CALLED " << nb_called_mpz_remove << endl;
 	return 0;
 }

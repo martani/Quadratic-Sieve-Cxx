@@ -16,11 +16,13 @@ public:
 	mpz_class X;
 	mpz_t x_squared;
 	mpz_t exponent_vector;
+//	mpz_t non_zeor_exponents_vector;	//bit is set to one if corresponding prime is <> 0
 
 	SmoothNumber ()
 	{
 		mpz_init(this->x_squared);
 		mpz_init(this->exponent_vector);
+//		mpz_init(this->non_zeor_exponents_vector);
 
 		this->_is_initialized = true;
 		this->smooth_base_size = 0;
@@ -30,13 +32,14 @@ public:
 	{
 		mpz_clear(this->x_squared);
 		mpz_clear(this->exponent_vector);
+//		mpz_clear(this->non_zeor_exponents_vector);
 	}
 
 
 	//Initialize the smooth number with the value of init_x
 	//The exponent vector of this smooth number have nb_smooth_primes bits
 	//one bit for each prime in the smooth base
-	void Init (mpz_class init_x, unsigned long int nb_smooth_primes, mpz_class modulus);
+	inline void Init (mpz_class init_x, unsigned long int nb_smooth_primes, mpz_class modulus);
 
 
 	//Initialize the smooth number without the exponent vector (no smooth base
@@ -52,7 +55,10 @@ public:
 	//Sets to 1 the bit corresponding to the i'th prime in the smooth base.
 	inline void SetExponentVectorBit(unsigned long i);
 
-	const mpz_t& GetExponentVector () const;
+	inline void SetNonZeroExponentsVectorBit(unsigned long i);
+
+	const mpz_t& GetExponentVector ();
+//	const mpz_t& GetNonZeroExponentsVector ();
 
 
 private:
@@ -65,7 +71,7 @@ private:
 	SmoothNumber (const SmoothNumber& other);
 };
 
-void SmoothNumber::Init (mpz_class init_x, unsigned long int nb_smooth_primes,
+inline void SmoothNumber::Init (mpz_class init_x, unsigned long int nb_smooth_primes,
 		mpz_class modulus)
 {
 	if(!this->_is_initialized)
@@ -73,6 +79,9 @@ void SmoothNumber::Init (mpz_class init_x, unsigned long int nb_smooth_primes,
 		mpz_init(this->x_squared);
 		mpz_init2(this->exponent_vector, nb_smooth_primes);
 		mpz_set_ui(this->exponent_vector, 0);
+
+//		mpz_init2(this->non_zeor_exponents_vector, nb_smooth_primes);
+//		mpz_set_ui(this->non_zeor_exponents_vector, 0);
 
 		this->_is_initialized = true;
 	}
@@ -82,6 +91,10 @@ void SmoothNumber::Init (mpz_class init_x, unsigned long int nb_smooth_primes,
 		mpz_clear(this->exponent_vector);		//allocate new space for the exponent vector
 		mpz_init2(this->exponent_vector, nb_smooth_primes);
 		mpz_set_ui(this->exponent_vector, 0);
+
+//		mpz_clear(this->non_zeor_exponents_vector);		//allocate new space for the exponent vector
+//		mpz_init2(this->non_zeor_exponents_vector, nb_smooth_primes);
+//		mpz_set_ui(this->non_zeor_exponents_vector, 0);
 	}
 
 	this->X = init_x;
@@ -130,9 +143,19 @@ inline void SmoothNumber::SetExponentVectorBit(unsigned long i)
 	mpz_setbit(this->exponent_vector, i);
 }
 
-const mpz_t& SmoothNumber::GetExponentVector () const
+//inline void SmoothNumber::SetNonZeroExponentsVectorBit(unsigned long i)
+//{
+//	mpz_setbit(this->non_zeor_exponents_vector, i);
+//}
+
+const mpz_t& SmoothNumber::GetExponentVector ()
 {
 	return this->exponent_vector;
 }
+
+//const mpz_t& SmoothNumber::GetNonZeroExponentsVector () const
+//{
+//	return this->non_zeor_exponents_vector;
+//}
 
 #endif /* SMOOTH_NUMBER_H_ */
