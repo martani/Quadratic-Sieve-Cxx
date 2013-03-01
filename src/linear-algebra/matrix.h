@@ -52,7 +52,7 @@ public:
 
 		this->next_available_row = 0;
 
-		//Release previous data is any
+		//Release previous data if any
 		if(this->_A != NULL)
 		{
 			for(unsigned long int i=0; i<this->next_available_row; ++i)

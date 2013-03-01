@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 	//Start factoring
 	qs.Factor();
 
-	if(qs.GetFactor1 () == 1 || qs.GetFactor2 () == N)
+	if(qs.GetFactor1 () == 1 || qs.GetFactor1 () == N)
 	{
 		cout << ">>>> Failed to factor " << N << " <<<<\t"
 				<< "Try using more linear relations" << endl;
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 	{
 		cout << endl << ">>>>>>> Factored " << N << endl;
 		cout << "\t Factor 1: " << qs.GetFactor1 () << endl;
-		cout << "\t Factor 2: " << N/qs.GetFactor1 () << endl;
+		cout << "\t Factor 2: " << qs.GetFactor2 () << endl;
 	}
 
 	cout << endl << "Done!" << endl;
