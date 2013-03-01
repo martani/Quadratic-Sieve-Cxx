@@ -14,9 +14,6 @@
 class SmoothNumber {
 public:
 	mpz_class X;
-	mpz_t x_squared;
-	mpz_t exponent_vector;
-//	mpz_t non_zeor_exponents_vector;	//bit is set to one if corresponding prime is <> 0
 
 	SmoothNumber ()
 	{
@@ -26,6 +23,30 @@ public:
 
 		this->_is_initialized = true;
 		this->smooth_base_size = 0;
+	}
+
+	SmoothNumber (const SmoothNumber& other)
+	{
+		this->X = other.X;
+		mpz_init_set(this->x_squared, other.x_squared);
+		mpz_init_set(this->exponent_vector, other.exponent_vector);
+//		mpz_init(this->non_zeor_exponents_vector);
+
+		this->_is_initialized = other._is_initialized;
+		this->smooth_base_size = other.smooth_base_size;
+	}
+
+	SmoothNumber& operator=(const SmoothNumber& other)
+	{
+		this->X = other.X;
+		mpz_init_set(this->x_squared, other.x_squared);
+		mpz_init_set(this->exponent_vector, other.exponent_vector);
+//		mpz_init(this->non_zeor_exponents_vector);
+
+		this->_is_initialized = other._is_initialized;
+		this->smooth_base_size = other.smooth_base_size;
+
+		return *this;
 	}
 
 	~SmoothNumber ()
@@ -60,15 +81,17 @@ public:
 	const mpz_t& GetExponentVector ();
 //	const mpz_t& GetNonZeroExponentsVector ();
 
+	mpz_class GetXSquared () const;
+
 
 private:
 	mpz_class modulus_N;
+	mpz_t x_squared;
+	mpz_t exponent_vector;
+//	mpz_t non_zeor_exponents_vector;	//bit is set to one if corresponding prime is <> 0
 
 	bool _is_initialized;
 	unsigned long int smooth_base_size;
-
-	SmoothNumber& operator=(const SmoothNumber& other);
-	SmoothNumber (const SmoothNumber& other);
 };
 
 inline void SmoothNumber::Init (mpz_class init_x, unsigned long int nb_smooth_primes,
@@ -109,7 +132,11 @@ inline void SmoothNumber::Init (mpz_class init_x, unsigned long int nb_smooth_pr
 void SmoothNumber::InitWithoutExponentVector (mpz_class init_x, mpz_class modulus)
 {
 	this->X = init_x;
-	mpz_init(this->x_squared);
+	if(!this->_is_initialized)
+	{
+		mpz_init(this->x_squared);
+		this->_is_initialized = true;
+	}
 
 	//Set x_squared to X*X - N
 	mpz_pow_ui(this->x_squared, X.get_mpz_t (), 2);
@@ -153,6 +180,10 @@ const mpz_t& SmoothNumber::GetExponentVector ()
 	return this->exponent_vector;
 }
 
+mpz_class SmoothNumber::GetXSquared () const
+{
+	return mpz_class (this->x_squared);
+}
 //const mpz_t& SmoothNumber::GetNonZeroExponentsVector () const
 //{
 //	return this->non_zeor_exponents_vector;

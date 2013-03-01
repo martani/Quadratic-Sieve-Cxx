@@ -8,36 +8,35 @@
 #ifndef GAUSS_ELIMINATION_H_
 #define GAUSS_ELIMINATION_H_
 
-#include "gmp.h"
+#include <gmp.h>
 #include "matrix.h"
+#include <vector>
 
 class GaussElimination {
 private:
 
 	//Fills the vector linear_relations after Echelonize is called
 	void FillLinearRelations (Matrix& M, Matrix& ID);
-
 	bool is_echelonized;
-
-	mpz_t *linear_relations;
-	int nb_linear_relations;
+	vector<mpz_class> linear_relations;
 
 public:
 
-	GaussElimination () : is_echelonized (false), linear_relations (NULL),
-						nb_linear_relations (0) {}
+	GaussElimination () : is_echelonized (false) {}
 
 	~GaussElimination ()
 	{
-		if(linear_relations != NULL)
-			delete [] linear_relations;
+		//if(linear_relations != NULL)
+			//delete [] linear_relations;
 	}
 
 	//Performs a Gaussian elimination over the matrix M
 	void Echelonize (Matrix& M);
 
 	//Returns the linear relations resulted from the echelon form of the Matrix M
-	const mpz_t* GetLinearRelations () const;
+	const vector<mpz_class>& GetLinearRelations ();
+
+	unsigned int GetNbLinearRelations () const;
 };
 
 
@@ -53,17 +52,11 @@ void GaussElimination::Echelonize (Matrix& M)
 
 	for(unsigned long int col=0; col<M.col_dim (); ++col)
 	{
-//		std::cout << "Column " << col << std::ends
-//				<< " Current non reduced " << current_non_reduced_row
-//				<< std::endl;
-
 		next_pivot_idx = (unsigned long int)-1;
 
 		//Get the first row which has the bit at column col equals to 1
 		for(unsigned long int i=current_non_reduced_row; i<M.row_dim (); ++i)
 		{
-			//std::cout << "\ti " << i << std::endl;
-			//std::cout << "M[i] = " << M[i] << std::endl;
 			if(mpz_tstbit(M[i], col))
 			{
 				next_pivot_idx = i;
@@ -74,7 +67,6 @@ void GaussElimination::Echelonize (Matrix& M)
 		//Now condidate row found, continue to next column
 		if(next_pivot_idx == (unsigned long int)-1)
 		{
-//			std::cout << "No pivots at column " << col << std::endl;
 			continue;
 		}
 
@@ -100,6 +92,7 @@ void GaussElimination::Echelonize (Matrix& M)
 	}
 
 	this->FillLinearRelations(M, ID);
+	delete ID_p;
 
 	is_echelonized = true;
 }
@@ -110,36 +103,44 @@ void GaussElimination::FillLinearRelations (Matrix& M, Matrix& ID)
 	if(ID.row_dim() < 1)
 		return;
 
-	unsigned long int last_row_idx = ID.row_dim() - 1;
-	int nb_linear_rel;
+	long last_row_idx = ID.row_dim() - 1;
+	int nb_linear_rel = 0;
 
-	while(mpz_cmp_ui(M[last_row_idx], 0) == 0)
+	//compute how many rows are linearly dependent in the matrix M
+	//the linear dependency is stored in the matrix ID
+	while(last_row_idx >= 0 && mpz_cmp_ui(M[last_row_idx], 0) == 0)
 	{
 		--last_row_idx;
 		++nb_linear_rel;
 	}
 
-	if(nb_linear_rel < 1)
-		return;
-
-	this->nb_linear_relations = nb_linear_rel;
-	this->linear_relations = new mpz_t [this->nb_linear_relations];
-	nb_linear_rel = 0;
+	if(nb_linear_rel < 1)	//Should never happen in a normal QS configuration
+		return;				//the number of rows must always be more than # columns
 
 	last_row_idx = ID.row_dim() - 1;
-	while(mpz_cmp_ui(M[last_row_idx], 0) == 0)
+
+	for(int i=0; i<nb_linear_rel; ++i)
 	{
-		mpz_init_set(this->linear_relations[nb_linear_rel], ID[last_row_idx]);
-		--last_row_idx;
+		this->linear_relations.push_back(mpz_class(ID[last_row_idx - i]));
 	}
 }
 
-const mpz_t* GaussElimination::GetLinearRelations () const
+
+const vector<mpz_class>& GaussElimination::GetLinearRelations ()
+{
+	if(!this->is_echelonized)
+		throw std::logic_error ("Must call Echelonize first");
+
+	return this->linear_relations;
+}
+
+
+unsigned int GaussElimination::GetNbLinearRelations () const
 {
 	if(!this->is_echelonized)
 		throw std::logic_error ("Must Call Echelonize first");
 
-	return this->linear_relations;
+	return this->linear_relations.size ();
 }
 
 #endif /* GAUSS_ELIMINATION_H_ */

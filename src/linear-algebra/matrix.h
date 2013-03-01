@@ -18,6 +18,13 @@
 class Matrix {
 public:
 
+	Matrix ()
+	{
+		this->n_rows = this->n_cols = 0;
+		this->next_available_row = 0;
+		_A = NULL;
+	}
+
 	Matrix (unsigned long int rows, unsigned long int cols)
 	{
 		if(rows < 1)
@@ -36,6 +43,25 @@ public:
 			mpz_clear(this->_A[i]);
 
 		delete [] this->_A;
+	}
+
+	void Init (unsigned long int rows, unsigned long int cols)
+	{
+		this->n_rows = rows;
+		this->n_cols = cols;
+
+		this->next_available_row = 0;
+
+		//Release previous data is any
+		if(this->_A != NULL)
+		{
+			for(unsigned long int i=0; i<this->next_available_row; ++i)
+				mpz_clear(this->_A[i]);
+
+			delete [] this->_A;
+		}
+
+		_A = new mpz_t [rows];
 	}
 
 	mpz_t &operator [] (unsigned long int row_index)

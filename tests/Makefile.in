@@ -48,7 +48,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = test-eratosthenes$(EXEEXT)
+bin_PROGRAMS = test-qs$(EXEEXT) test-vector-smooth-number$(EXEEXT)
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/depcomp
@@ -62,9 +62,14 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_test_eratosthenes_OBJECTS = test-eratosthenes.$(OBJEXT)
-test_eratosthenes_OBJECTS = $(am_test_eratosthenes_OBJECTS)
-test_eratosthenes_LDADD = $(LDADD)
+am_test_qs_OBJECTS = test-qs.$(OBJEXT)
+test_qs_OBJECTS = $(am_test_qs_OBJECTS)
+test_qs_LDADD = $(LDADD)
+am_test_vector_smooth_number_OBJECTS =  \
+	test-vector-smooth-number.$(OBJEXT)
+test_vector_smooth_number_OBJECTS =  \
+	$(am_test_vector_smooth_number_OBJECTS)
+test_vector_smooth_number_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -74,8 +79,12 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(test_eratosthenes_SOURCES)
-DIST_SOURCES = $(test_eratosthenes_SOURCES)
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+SOURCES = $(test_qs_SOURCES) $(test_vector_smooth_number_SOURCES)
+DIST_SOURCES = $(test_qs_SOURCES) $(test_vector_smooth_number_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -176,7 +185,10 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CXXFLAGS = -O3
-test_eratosthenes_SOURCES = test-eratosthenes.C
+#test-eratosthenes 
+test_qs_SOURCES = test-qs.C ../src/QS.h
+#test_eratosthenes_SOURCES = test-eratosthenes.C
+test_vector_smooth_number_SOURCES = test-vector-smooth-number.C
 all: all-am
 
 .SUFFIXES:
@@ -251,9 +263,12 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-test-eratosthenes$(EXEEXT): $(test_eratosthenes_OBJECTS) $(test_eratosthenes_DEPENDENCIES) $(EXTRA_test_eratosthenes_DEPENDENCIES) 
-	@rm -f test-eratosthenes$(EXEEXT)
-	$(CXXLINK) $(test_eratosthenes_OBJECTS) $(test_eratosthenes_LDADD) $(LIBS)
+test-qs$(EXEEXT): $(test_qs_OBJECTS) $(test_qs_DEPENDENCIES) $(EXTRA_test_qs_DEPENDENCIES) 
+	@rm -f test-qs$(EXEEXT)
+	$(CXXLINK) $(test_qs_OBJECTS) $(test_qs_LDADD) $(LIBS)
+test-vector-smooth-number$(EXEEXT): $(test_vector_smooth_number_OBJECTS) $(test_vector_smooth_number_DEPENDENCIES) $(EXTRA_test_vector_smooth_number_DEPENDENCIES) 
+	@rm -f test-vector-smooth-number$(EXEEXT)
+	$(CXXLINK) $(test_vector_smooth_number_OBJECTS) $(test_vector_smooth_number_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -261,7 +276,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-eratosthenes.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-qs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-vector-smooth-number.Po@am__quote@
 
 .C.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

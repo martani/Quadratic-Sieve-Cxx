@@ -12,9 +12,10 @@
 #include <vector>
 #include <climits>
 #include <sstream>
-#include "gmp.h"
-#include "gmpxx.h"
-#include "mpfr.h"
+#include <gmp.h>
+#include <gmpxx.h>
+#include <mpfr.h>
+#include <cassert>
 
 #include "eratosthenes.h"
 #include "gmp-patch.h"

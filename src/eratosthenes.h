@@ -13,7 +13,7 @@
 
 #include <vector>
 #include <gmpxx.h>
-
+#include <stdint.h>
 
 using namespace std;
 

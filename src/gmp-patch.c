@@ -83,6 +83,7 @@ int mpz_sqrtm(mpz_t q, const mpz_t n, const mpz_t p) {
           }
           if(i == 0) {                    /* q^2 * n^-1 = 1 (mod p), return   */
               //TMP_FREE;
+        	  mpz_clear(w); mpz_clear(n_inv); mpz_clear(y);
               return 1;
           }
           if(s-i == 1) {                  /* In case the exponent to w is 1,  */

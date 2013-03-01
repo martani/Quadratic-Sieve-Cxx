@@ -14,9 +14,11 @@
 #include <vector>
 #include <fstream>
 
+#include "debug-cout.h"
 #include "linear-algebra/matrix.h"
 
-#ifdef	ENABLE_TIMERS
+
+#ifndef	ENABLE_TIMERS
 #define TIMER_DECLARE(s)  		\
 	timeval __timer_q_##s; 		\
 	timeval __timer_q_end_##s;	\
@@ -29,7 +31,7 @@
 	__timer_q_diff_##s += (__timer_q_end_##s.tv_sec  - __timer_q_##s.tv_sec) * 1000.0;	\
 	__timer_q_diff_##s += (__timer_q_end_##s.tv_usec - __timer_q_##s.tv_usec) / 1000.0;
 
-#define TIMER_REPORT(s)													\
+#define TIMER_REPORT(s)			\
 	std::cout << "Total [" #s "] time: " << __timer_q_diff_##s << " ms."	\
 			  << std::endl;
 #else
