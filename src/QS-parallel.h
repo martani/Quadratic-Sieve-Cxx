@@ -1,89 +1,62 @@
 /*
- * QS.C
+ * QS-parallel.h
  *
- *  Created on: Feb 21, 2013
+ *  Created on: Mar 5, 2013
  *      Author: sky
  */
 
+#ifndef QS_PARALLEL_H_
+#define QS_PARALLEL_H_
 
-#ifndef QS_C_
-#define QS_C_
-
-#include <vector>
-#include <iostream>
-#include <cassert>
-
+#include <omp.h>
 #include "QS.h"
 
+class QSParallel : public QS {
+
+private:
+	unsigned nb_threads;
+
+	virtual void Sieve ();
 
 
-QS::QS (mpz_class N)
-{
-	_N = N;
-	p = 1;
-	q = N;
+public:
 
-	this->additional_linear_relations = 5;	//5 is _probably_ enough
-	this->smooth_base_size = 0;
-	this->computation_completed = false;
-}
-
-QS::QS (mpz_class N, unsigned nb_additional_linear_relations)
-{
-	_N = N;
-	p = 1;
-	q = N;
-
-	//20 more relations is estimated as sufficient
-	if(nb_additional_linear_relations < MAX_NB_ADDITIONAL_LINEAR_RELS)
-		this->additional_linear_relations =
-				nb_additional_linear_relations == 0 ?
-						1 :
-						nb_additional_linear_relations;
-	else
-		this->additional_linear_relations = MAX_NB_ADDITIONAL_LINEAR_RELS;
-
-	this->smooth_base_size = 0;
-	this->computation_completed = false;
-}
-
-
-void QS::Factor()
-{
-	//Step 1: Sieve for smooth numbers
-	try
+	QSParallel (mpz_class N) : QS (N)
 	{
-		this->Sieve ();
-	}
-	catch(std::exception &e)
-	{
-		std::cout << "[[ERROR]] Cannot setup smooth base, the integer is too large" << endl
-				  << "Exception message:\t"
-				  << e.what () << endl;
-
-		return;
+		this->nb_threads = omp_get_max_threads ();
 	}
 
-	//Step 2: Perform linear algebra
-	this->PerformeGaussianElimination ();
+	QSParallel (mpz_class N, unsigned nb_additional_linear_relations)
+	: QS (N, nb_additional_linear_relations)
+	{
+		this->nb_threads = omp_get_max_threads ();
+	}
 
-	//Step 3: Factor using results from linear algebra
-	this->FactorUsingLinearRelations ();
+	/**
+	 * Sets the number of threads to use in the sieving step.
+	 * If this method is not called, the max available number of threads
+	 * on this processor are used.
+	 */
+	void setNumThreads (unsigned nbThreads);
+	virtual ~QSParallel () { ; }
+};
+
+
+void QSParallel::setNumThreads (unsigned nbThreads)
+{
+	if(nbThreads < 1)
+		throw logic_error ("nbThreads must be at least 1");
+
+	this->nb_threads = nbThreads;
 }
 
-//This can be parallelized. Probably??
-void QS::SetupSmoothBase (SmoothBase& B)
-{
-	TIMER_DECLARE(smooth_base_tm);
-	TIMER_START(smooth_base_tm);
-		B.Setup();
-	TIMER_STOP(smooth_base_tm);
-	dcout << "[Number of primes in base " << B.primes.size() << "]\t";
-	TIMER_REPORT(smooth_base_tm);
-}
 
-void QS::Sieve()
+void QSParallel::Sieve()
 {
+	//Set num threads.
+	omp_set_num_threads(this->nb_threads);
+	dcout << "[[Parallel Sieve() using " << this->nb_threads << " threads.]]\n";
+
 	mpz_class x = sqrt(this->_N);	//x goes though sqrt(N), sqrt(N)+1, sqrt(N)+2..
 	if(x * x == this->_N)			//N is a perfect square, factored!
 	{
@@ -151,6 +124,7 @@ void QS::Sieve()
 
 			x_idx = x-starting_x_current_round;
 
+#pragma omp parallel for private (exponent_prime_p)
 			for(unsigned long j=x_idx.get_ui(); j<SIEVING_STEP;
 					j+=smooth_base.primes[i])
 			{
@@ -180,6 +154,7 @@ void QS::Sieve()
 				//Check if sieving_temp_smooth_numbers[j] was fully factored
 				if(sieving_temp_smooth_numbers[j].IsFullyFactoredOnSmoothBase())
 				{
+					#pragma omp atomic
 					++nb_discovered_smooth_numbers;
 
 					//Add the exponent vector to the matrix
@@ -203,6 +178,8 @@ void QS::Sieve()
 								mpz_class(tmp_prime_p), smooth_base.roots_2[i]);
 
 			x_idx = x-starting_x_current_round;
+
+#pragma omp parallel for private (exponent_prime_p)
 			for(unsigned long int j= x_idx.get_ui(); j<SIEVING_STEP; j+=smooth_base.primes[i])
 			{
 				//Eliminate all powers of tmp_prime in sieving_temp_smooth_numbers[j]
@@ -231,6 +208,7 @@ void QS::Sieve()
 				//Check if sieving_temp_smooth_numbers[j] was fully factored
 				if(sieving_temp_smooth_numbers[j].IsFullyFactoredOnSmoothBase())
 				{
+					#pragma omp atomic
 					++nb_discovered_smooth_numbers;
 
 					//Add the exponent vector to the matrix
@@ -267,99 +245,5 @@ void QS::Sieve()
 }
 
 
-void QS::PerformeGaussianElimination()
-{
-	dcout << "\n";
-	dcout << "<< Performing Linear Algebra >>" << "\n";
-	TIMER_DECLARE(gauss);
-	TIMER_START(gauss);
 
-	this->gauss.Echelonize(this->_M);
-	this->linear_relations = gauss.GetLinearRelations();
-
-	TIMER_STOP(gauss);
-	TIMER_REPORT(gauss);
-
-	dcout << "\tLinear dependent relations found : " << this->linear_relations.size ()
-		  << "\n";
-	//Utils::dumpMatrixAsPbmImage(M, "M.pbm");
-}
-
-
-void QS::FactorUsingLinearRelations()
-{
-	dcout << "\n";
-	dcout << "<< Factoring >>\n";
-	mpz_class x_side, y_side, factor;
-	mpz_t fctr; mpz_init(fctr);
-
-	for(int i = 0; i < this->gauss.GetNbLinearRelations (); ++i)
-	{
-		dcout << "Trying relation " << i << "\n";
-		x_side = 1;
-		y_side = 1;
-
-		//For all bits representing the primes in the smooth base
-		for(int j = 0; j < this->smooth_base_size; ++j)
-		{
-			if (mpz_tstbit(this->linear_relations[i].get_mpz_t (), j))
-			{
-				x_side *= final_smooth_numbers[j].X;  //j'th smooth number is used in the product
-				x_side %= this->_N;  //Reduce modulo N to keep the numbers fairly small
-
-				y_side *= final_smooth_numbers[j].GetXSquared ();  //We cannot reduce that!!
-			}
-		}
-
-		//cout << "Y SIDE IS " << y_side <<  endl;
-
-		y_side = sqrt(y_side);  //
-		y_side = y_side % this->_N;  //Now we can reduce by N
-
-		x_side = x_side - y_side;
-
-
-		mpz_gcd(fctr, x_side.get_mpz_t (), this->_N.get_mpz_t ());
-
-		factor = mpz_class (fctr);
-		if(factor != this->_N && factor != 1)  //If the factor is not trivial, N or 1, then we got it!
-			break;
-	}
-	mpz_clear(fctr);
-
-	if(factor == 1 || factor == this->_N)
-	{
-		dcout << ">>>> Failed to factor " << this->_N << " <<<<\t"
-				<< "Try using more linear relations" << "\n";
-	}
-	else
-	{
-		dcout << "\n";
-		dcout << ">>>>>>> Factored " << this->_N << "\n";
-		dcout << "\t Factor 1: " << factor << "\n";
-		dcout << "\t Factor 2: " << this->_N/factor << "\n";
-
-		SetFactors(factor, this->_N/factor);
-	}
-}
-
-void QS::SetFactors(mpz_class f1, mpz_class f2)
-{
-	this->p = f1;
-	this->q = f2;
-
-	this->computation_completed = true;
-}
-
-mpz_class QS::GetFactor1()
-{
-	return this->p;
-}
-
-mpz_class QS::GetFactor2()
-{
-	return this->q;
-}
-
-#endif /* QS_C_ */
-
+#endif /* QS_PARALLEL_H_ */

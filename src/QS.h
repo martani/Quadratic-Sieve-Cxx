@@ -27,6 +27,8 @@
 
 
 class QS {
+
+protected:
 	mpz_class _N, p, q;
 	unsigned additional_linear_relations;
 	unsigned long smooth_base_size;
@@ -42,7 +44,9 @@ class QS {
 	vector<mpz_class> linear_relations;
 	GaussElimination gauss;
 
-	void Sieve ();
+
+	virtual void SetupSmoothBase (SmoothBase& B);
+	virtual void Sieve ();
 	void PerformeGaussianElimination ();
 	void FactorUsingLinearRelations ();
 
@@ -56,6 +60,7 @@ public:
 
 	QS (mpz_class N);
 	QS (mpz_class N, unsigned nb_additional_linear_relations);
+	virtual ~QS () { ; }
 
 	void Factor();
 

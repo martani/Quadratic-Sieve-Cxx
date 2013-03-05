@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <vector>
+#include <omp.h>
 #include "../src/smooth-number.h"
 
 using namespace std;
@@ -31,4 +32,7 @@ int main(int argc, char **argv)
 	delete a;
 
 	cout << "Done !" << endl;
+
+	int nProcessors = omp_get_max_threads();
+	cout << "OMP NB processors : " << nProcessors << endl;
 }

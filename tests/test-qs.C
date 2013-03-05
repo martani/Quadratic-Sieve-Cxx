@@ -11,6 +11,7 @@
 #include <gmp.h>
 #include <gmpxx.h>
 #include "../src/QS.h"
+#include "../src/QS-parallel.h"
 
 using namespace std;
 
@@ -23,7 +24,7 @@ char* getCmdOption(char ** begin, char ** end, const std::string & option)
     {
         return *itr;
     }
-    return 0;
+    return NULL;
 }
 
 bool cmdOptionExists(char** begin, char** end, const std::string& option)
@@ -61,6 +62,10 @@ int main(int argc, char **argv)
 	//the factors
 	mpz_class p, q;
 
+	//Parallel sieving?
+	bool parallel = false;
+	int nb_parallel_threads = 0;
+
 	if(argc < 2 || cmdOptionExists(argv, argv+argc, "-h"))
 	{
 		printUsage(argv[0]);
@@ -68,10 +73,16 @@ int main(int argc, char **argv)
 	}
 
 	//generate a random RSA integer?
-	int modulus_size_bits = 40;
+	int modulus_size_bits;
 	if(cmdOptionExists(argv, argv+argc, "-b"))
 	{
 		char *prime_size = getCmdOption(argv, argv+argc, "-b");
+		if(prime_size == NULL)
+		{
+			printUsage(argv[0]);
+			return -1;
+		}
+
 		modulus_size_bits = atoi(prime_size);
 		if(modulus_size_bits < 20)
 		{
@@ -101,27 +112,74 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+	if(cmdOptionExists(argv, argv+argc, "-p"))
+	{
+		parallel = true;
+		char *nb_threads = getCmdOption(argv, argv+argc, "-p");
+
+		if(nb_threads != NULL)
+		{
+			nb_parallel_threads = atoi(nb_threads);
+			if(modulus_size_bits < 1)
+			{
+				printUsage(argv[0]);
+				return -1;
+			}
+		}
+
+		cout << "[[ Parallel ]]\t";
+		cout << "NB THREADS ";
+		if(nb_parallel_threads == 0)
+			cout << "MAX_THREADS";
+		else
+			cout << nb_parallel_threads;
+		cout << endl;
+	}
+
 	cout << endl << "[[ Using RSA modulus size "
 		 <<	mpz_sizeinbase (N.get_mpz_t (), 2) << "]]" << endl;
 	cout << "N = P*Q = " << N << endl << endl;
 
 	//Initiate the Quadratic Sieve algorithm
-	QS qs(N, NB_LINEAR_RELATIONS);
-
-	//Start factoring
-	qs.Factor();
-
-	if(qs.GetFactor1 () == 1 || qs.GetFactor1 () == N)
+	if(!parallel)
 	{
-		cout << ">>>> Failed to factor " << N << " <<<<\t"
-				<< "Try using more linear relations" << endl;
+		QS qs(N, NB_LINEAR_RELATIONS);
+
+		//Start factoring
+		qs.Factor();
+
+		if(qs.GetFactor1 () == 1 || qs.GetFactor1 () == N)
+		{
+			cout << ">>>> Failed to factor " << N << " <<<<\t"
+					<< "Try using more linear relations" << endl;
+		}
+		else
+		{
+			cout << endl << ">>>>>>> Factored " << N << endl;
+			cout << "\t Factor 1: " << qs.GetFactor1 () << endl;
+			cout << "\t Factor 2: " << qs.GetFactor2 () << endl;
+		}
 	}
 	else
 	{
-		cout << endl << ">>>>>>> Factored " << N << endl;
-		cout << "\t Factor 1: " << qs.GetFactor1 () << endl;
-		cout << "\t Factor 2: " << qs.GetFactor2 () << endl;
-	}
+		QSParallel qs(N, NB_LINEAR_RELATIONS);
+		if(nb_parallel_threads != 0)
+			qs.setNumThreads(nb_parallel_threads);
 
+		//Start factoring
+		qs.Factor();
+
+		if(qs.GetFactor1 () == 1 || qs.GetFactor1 () == N)
+		{
+			cout << ">>>> Failed to factor " << N << " <<<<\t"
+					<< "Try using more linear relations" << endl;
+		}
+		else
+		{
+			cout << endl << ">>>>>>> Factored " << N << endl;
+			cout << "\t Factor 1: " << qs.GetFactor1 () << endl;
+			cout << "\t Factor 2: " << qs.GetFactor2 () << endl;
+		}
+	}
 	cout << endl << "Done!" << endl;
 }

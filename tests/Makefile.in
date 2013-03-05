@@ -66,7 +66,7 @@ am_test_qs_OBJECTS = test-qs.$(OBJEXT)
 test_qs_OBJECTS = $(am_test_qs_OBJECTS)
 test_qs_LDADD = $(LDADD)
 am_test_vector_smooth_number_OBJECTS =  \
-	test-vector-smooth-number.$(OBJEXT)
+	test_vector_smooth_number-test-vector-smooth-number.$(OBJEXT)
 test_vector_smooth_number_OBJECTS =  \
 	$(am_test_vector_smooth_number_OBJECTS)
 test_vector_smooth_number_LDADD = $(LDADD)
@@ -184,11 +184,12 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CXXFLAGS = -O3
+AM_CXXFLAGS = -O3 -fopenmp
 #test-eratosthenes 
 test_qs_SOURCES = test-qs.C ../src/QS.h
 #test_eratosthenes_SOURCES = test-eratosthenes.C
 test_vector_smooth_number_SOURCES = test-vector-smooth-number.C
+test_vector_smooth_number_CPPFLAGS = -fopenmp
 all: all-am
 
 .SUFFIXES:
@@ -277,7 +278,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-qs.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-vector-smooth-number.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_vector_smooth_number-test-vector-smooth-number.Po@am__quote@
 
 .C.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -292,6 +293,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+test_vector_smooth_number-test-vector-smooth-number.o: test-vector-smooth-number.C
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_vector_smooth_number_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_vector_smooth_number-test-vector-smooth-number.o -MD -MP -MF $(DEPDIR)/test_vector_smooth_number-test-vector-smooth-number.Tpo -c -o test_vector_smooth_number-test-vector-smooth-number.o `test -f 'test-vector-smooth-number.C' || echo '$(srcdir)/'`test-vector-smooth-number.C
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/test_vector_smooth_number-test-vector-smooth-number.Tpo $(DEPDIR)/test_vector_smooth_number-test-vector-smooth-number.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test-vector-smooth-number.C' object='test_vector_smooth_number-test-vector-smooth-number.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_vector_smooth_number_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_vector_smooth_number-test-vector-smooth-number.o `test -f 'test-vector-smooth-number.C' || echo '$(srcdir)/'`test-vector-smooth-number.C
+
+test_vector_smooth_number-test-vector-smooth-number.obj: test-vector-smooth-number.C
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_vector_smooth_number_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_vector_smooth_number-test-vector-smooth-number.obj -MD -MP -MF $(DEPDIR)/test_vector_smooth_number-test-vector-smooth-number.Tpo -c -o test_vector_smooth_number-test-vector-smooth-number.obj `if test -f 'test-vector-smooth-number.C'; then $(CYGPATH_W) 'test-vector-smooth-number.C'; else $(CYGPATH_W) '$(srcdir)/test-vector-smooth-number.C'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/test_vector_smooth_number-test-vector-smooth-number.Tpo $(DEPDIR)/test_vector_smooth_number-test-vector-smooth-number.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test-vector-smooth-number.C' object='test_vector_smooth_number-test-vector-smooth-number.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_vector_smooth_number_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_vector_smooth_number-test-vector-smooth-number.obj `if test -f 'test-vector-smooth-number.C'; then $(CYGPATH_W) 'test-vector-smooth-number.C'; else $(CYGPATH_W) '$(srcdir)/test-vector-smooth-number.C'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
